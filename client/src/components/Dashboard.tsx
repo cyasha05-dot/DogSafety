@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Input } from "./ui/input";
 import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
@@ -112,6 +113,7 @@ export function Dashboard() {
         return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
+  const navigate = useNavigate();
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -318,7 +320,12 @@ export function Dashboard() {
                         </SelectContent>
                       </Select>
 
-                      <Button variant="outline" size="sm" className="w-full">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                        onClick={() => navigate(`/reports/${report._id}`)}
+                      >
                         <Eye className="h-4 w-4 mr-1" />
                         View Details
                       </Button>

@@ -1,6 +1,6 @@
-import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 dotenv.config();
+import nodemailer from "nodemailer";
 
 console.log("SendGrid API Key:", process.env.SENDGRID_API_KEY);
 
