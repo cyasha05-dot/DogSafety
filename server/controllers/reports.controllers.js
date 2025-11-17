@@ -1,6 +1,7 @@
 import Report from "../models/Reports.models.js";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
+import sendEmail from "../utils/testmail.js";
 
 dotenv.config();
 
@@ -17,36 +18,67 @@ const transporter = nodemailer.createTransport({
 // Create new report
 export const createReport = async (req, res) => {
   try {
-    const { location, description, severity, dogCount, contactNumber } =
-      req.body;
-
-    // Photos uploaded via Cloudinary
-    const photos = req.files?.map((file) => file.path) || [];
-
-    const newReport = await Report.create({
+    const {
+      name,
+      email,
       location,
       description,
       severity,
       dogCount,
       contactNumber,
+    } = req.body;
+
+    // Format date as dd/mm/yyyy
+    const formatDate = () => {
+      const d = new Date();
+      const day = String(d.getDate()).padStart(2, "0");
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`;
+    };
+
+    // Photos from Cloudinary
+    const photos = req.files?.map((file) => file.path) || [];
+
+    const newReport = await Report.create({
+      name,
+      email,
+      location,
+      description,
+      severity, // Aggressive / Struck / Injured
+      dogCount: Number(dogCount),
+      contactNumber,
       photos,
-      timestamp: new Date(),
+      timestamp: formatDate(), // formatted
     });
 
-    // Notify authorities if severity is high
-    if (severity === "high") {
-      const recipients = process.env.NOTIFY_EMAILS.split(",");
-      await transporter.sendMail({
-        from: `"Street Dog Alert" <${process.env.EMAIL_USER}>`,
-        to: recipients,
-        subject: "High Severity Dog Incident Reported",
-        html: `
-          <h3>High Severity Dog Incident</h3>
-          <p><strong>Location:</strong> ${location}</p>
-          <p><strong>Description:</strong> ${description}</p>
-          <p><strong>Contact:</strong> ${contactNumber}</p>
-        `,
-      });
+    // Email to admin
+    const adminEmail = "cyasha05@gmail.com";
+    const subject = "New Dog Incident Report Submitted";
+
+    const html = `
+      <h2>New Report Submitted</h2>
+      <p><strong>Location:</strong> ${newReport.location}</p>
+      <p><strong>Description:</strong> ${newReport.description}</p>
+      <p><strong>Severity:</strong> ${newReport.severity}</p>
+      <p><strong>Dog Count:</strong> ${newReport.dogCount}</p>
+      <p><strong>Date:</strong> ${newReport.timestamp}</p>
+      <p><strong>Reported By:</strong> ${newReport.name}</p>
+    `;
+
+    await sendEmail(adminEmail, subject, html);
+
+    // Confirmation email to the user
+    if (newReport.email) {
+      const userSubject = "Thank you for reporting!";
+      const userHtml = `
+        <h2>Report Received</h2>
+        <p>Thank you, ${newReport.name}, for reporting the incident.</p>
+        <p>We will take necessary action soon.</p>
+        <p><strong>Report ID:</strong> ${newReport._id}</p>
+        <p><strong>Date:</strong> ${newReport.timestamp}</p>
+      `;
+      await sendEmail(newReport.email, userSubject, userHtml);
     }
 
     res.status(201).json({ message: "Report submitted", report: newReport });

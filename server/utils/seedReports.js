@@ -9,8 +9,8 @@ const seedReports = async () => {
       status: "pending",
       dogCount: "6-10",
       description: "Pack of aggressive dogs blocking pedestrian path",
-      contactNumber: "+91 9876543210",
-      reportedBy: "Rajesh Kumar",
+      contactNumber: "+91 9359843313",
+      reportedBy: "yash chaudhari",
     },
     // Add more...
   ]);

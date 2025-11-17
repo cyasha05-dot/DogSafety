@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import api from "../api/axios";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
@@ -12,44 +12,44 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { Badge } from "./ui/badge";
-import { motion } from "motion/react";
 import {
+  CheckCircle,
   MapPin,
   Camera,
-  Clock,
   AlertTriangle,
-  Upload,
-  CheckCircle,
   Navigation,
   Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 
+// ✅ Corrected Types
 interface FormDataType {
+  name: string;
+  email: string;
   location: string;
   description: string;
-  severity: "low" | "medium" | "high" | "";
-  dogCount: "1-2" | "3-5" | "6-10" | "10+" | "";
+  severity: "Aggressive" | "Struck" | "Injured" | "";
+  dogCount: number;
   contactNumber: string;
   photos: File[];
 }
 
 export function ReportForm() {
   const [formData, setFormData] = useState<FormDataType>({
+    name: "",
+    email: "",
     location: "",
     description: "",
     severity: "",
-    dogCount: "",
+    dogCount: 0,
     contactNumber: "",
     photos: [],
   });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [gpsLoading, setGpsLoading] = useState(false);
-  const [currentLocation, setCurrentLocation] = useState<string>("");
 
-  // Handle photo selection
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
@@ -64,11 +64,11 @@ export function ReportForm() {
     }));
   };
 
-  // Get GPS location
   const getCurrentLocation = () => {
     setGpsLoading(true);
+
     if (!navigator.geolocation) {
-      toast.error("Geolocation is not supported by this browser.");
+      toast.error("Geolocation is not supported on this device.");
       setGpsLoading(false);
       return;
     }
@@ -76,69 +76,71 @@ export function ReportForm() {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        const mockAddress = `Lat: ${latitude.toFixed(
+
+        const locationText = `Lat: ${latitude.toFixed(
           6
         )}, Long: ${longitude.toFixed(6)}`;
-        setCurrentLocation(mockAddress);
-        setFormData((prev) => ({ ...prev, location: mockAddress }));
+
+        setFormData((prev) => ({ ...prev, location: locationText }));
         setGpsLoading(false);
-        toast.success("Location detected successfully!");
+        toast.success("Location fetched!");
       },
-      (error) => {
+      (err) => {
+        console.error(err);
+        toast.error("Unable to fetch location.");
         setGpsLoading(false);
-        toast.error("Unable to retrieve location. Please enter manually.");
-        console.error(error);
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   };
 
-  // Submit form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     setIsSubmitting(true);
 
     try {
       const formDataToSend = new FormData();
-      formDataToSend.append("location", formData.location);
-      formDataToSend.append("description", formData.description);
-      formDataToSend.append("severity", formData.severity);
-      formDataToSend.append("dogCount", formData.dogCount);
-      formDataToSend.append("contactNumber", formData.contactNumber);
 
-      formData.photos.forEach((photo) =>
-        formDataToSend.append("photos", photo)
-      );
-
-      const res = await axios.post(
-        "http://localhost:5000/api/reports",
-        formDataToSend,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
+      Object.entries(formData).forEach(([key, value]) => {
+        if (key === "photos") {
+          formData.photos.forEach((photo) =>
+            formDataToSend.append("photos", photo)
+          );
+        } else {
+          formDataToSend.append(key, value as string);
         }
-      );
+      });
+
+      const res = await api.post("/reports", formDataToSend, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
       toast.success(
         `Report submitted successfully! Incident ID: #${res.data.report._id}`
       );
 
       setSubmitted(true);
+
       setFormData({
+        name: "",
+        email: "",
         location: "",
         description: "",
         severity: "",
-        dogCount: "",
+        dogCount: 0,
         contactNumber: "",
         photos: [],
       });
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to submit report");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to submit report.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // SUCCESS SCREEN
   if (submitted) {
     return (
       <div className="max-w-2xl mx-auto mt-6">
@@ -148,8 +150,8 @@ export function ReportForm() {
             <h3 className="text-lg font-semibold text-green-800 mb-2">
               Report Submitted Successfully!
             </h3>
-            <p className="text-green-700 mb-4">
-              Municipal authorities have been notified and will respond shortly.
+            <p className="text-green-700">
+              Municipal authorities have been notified.
             </p>
           </CardContent>
         </Card>
@@ -166,145 +168,150 @@ export function ReportForm() {
             <span>Report Street Dog Incident</span>
           </CardTitle>
         </CardHeader>
+
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Name & Email */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label
-                  htmlFor="location"
-                  className="flex items-center space-x-1"
-                >
-                  <MapPin className="h-4 w-4" /> Location / Address
-                </Label>
-                <div className="flex space-x-2">
-                  <Input
-                    id="location"
-                    placeholder="Street name, landmark, area..."
-                    value={formData.location}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        location: e.target.value,
-                      }))
-                    }
-                    required
-                    className="flex-1"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={getCurrentLocation}
-                    disabled={gpsLoading}
-                  >
-                    {gpsLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Navigation className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
+              <div>
+                <Label>Full Name</Label>
+                <Input
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  required
+                />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="contactNumber">Contact Number</Label>
+              <div>
+                <Label>Email</Label>
                 <Input
-                  id="contactNumber"
-                  type="tel"
-                  placeholder="+91 9876543210"
-                  value={formData.contactNumber}
+                  type="email"
+                  value={formData.email}
                   onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      contactNumber: e.target.value,
-                    }))
+                    setFormData({ ...formData, email: e.target.value })
                   }
                   required
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="severity">Incident Severity</Label>
-                <Select
-                  value={formData.severity}
-                  onValueChange={(value: "low" | "medium" | "high") =>
-                    setFormData((prev) => ({ ...prev, severity: value }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select severity level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            {/* Location */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1">
+                <MapPin className="h-4 w-4" /> Location
+              </Label>
 
-              <div className="space-y-2">
-                <Label htmlFor="dogCount">Number of Dogs</Label>
-                <Select
-                  value={formData.dogCount}
-                  onValueChange={(value: "1-2" | "3-5" | "6-10" | "10+") =>
-                    setFormData((prev) => ({ ...prev, dogCount: value }))
+              <div className="flex gap-2">
+                <Input
+                  value={formData.location}
+                  onChange={(e) =>
+                    setFormData({ ...formData, location: e.target.value })
                   }
+                  required
+                />
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={getCurrentLocation}
+                  disabled={gpsLoading}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select count" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1-2">1-2 dogs</SelectItem>
-                    <SelectItem value="3-5">3-5 dogs</SelectItem>
-                    <SelectItem value="6-10">6-10 dogs</SelectItem>
-                    <SelectItem value="10+">More than 10 dogs</SelectItem>
-                  </SelectContent>
-                </Select>
+                  {gpsLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Navigation className="h-4 w-4" />
+                  )}
+                </Button>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="description">Incident Description</Label>
-              <Textarea
-                id="description"
-                placeholder="Describe the incident, dog behavior, any injuries..."
-                value={formData.description}
+            {/* Contact Number */}
+            <div>
+              <Label>Contact Number</Label>
+              <Input
+                value={formData.contactNumber}
                 onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    description: e.target.value,
-                  }))
+                  setFormData({ ...formData, contactNumber: e.target.value })
                 }
                 required
-                className="min-h-[100px]"
               />
             </div>
 
             <div className="space-y-2">
-              <Label className="flex items-center space-x-1">
-                <Camera className="h-4 w-4" /> Photo Evidence (Optional)
+              <label className="text-sm font-medium">Severity</label>
+
+              <Select
+                value={formData.severity}
+                onValueChange={(value: "Aggressive" | "Struck" | "Injured") =>
+                  setFormData({ ...formData, severity: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select severity" />
+                </SelectTrigger>
+
+                <SelectContent>
+                  <SelectItem value="Aggressive">Aggressive</SelectItem>
+                  <SelectItem value="Struck">Struck</SelectItem>
+                  <SelectItem value="Injured">Injured</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Number of Dogs</Label>
+              <Input
+                type="number"
+                min="1"
+                value={formData.dogCount}
+                onChange={(e) =>
+                  setFormData({ ...formData, dogCount: Number(e.target.value) })
+                }
+                required
+              />
+            </div>
+
+            {/* Description */}
+            <div>
+              <Label>Description</Label>
+              <Textarea
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+                className="min-h-[100px]"
+              />
+            </div>
+
+            {/* Photos */}
+            <div>
+              <Label className="flex items-center gap-1">
+                <Camera className="h-4 w-4" /> Photos (Optional)
               </Label>
+
               <input
                 type="file"
                 multiple
                 accept="image/*"
                 onChange={handlePhotoUpload}
               />
+
               {formData.photos.length > 0 && (
                 <div className="grid grid-cols-3 gap-2 mt-2">
-                  {formData.photos.map((photo, idx) => (
-                    <div key={idx} className="relative">
+                  {formData.photos.map((photo, i) => (
+                    <div key={i} className="relative">
                       <img
                         src={URL.createObjectURL(photo)}
-                        alt={`upload-${idx}`}
-                        className="w-full h-20 object-cover rounded"
+                        className="h-20 w-full object-cover rounded"
                       />
+
                       <button
                         type="button"
-                        onClick={() => removePhoto(idx)}
-                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5"
+                        onClick={() => removePhoto(i)}
+                        className="absolute top-0 right-0 bg-red-600 text-white w-5 h-5 rounded-full"
                       >
                         ×
                       </button>

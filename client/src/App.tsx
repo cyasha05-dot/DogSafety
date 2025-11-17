@@ -176,7 +176,7 @@ function Footer() {
 
         <div className="border-t border-gray-200 mt-8 pt-6 text-center text-sm text-gray-500">
           <p>
-            &copy; 2024 Street Guardian. All rights reserved. | Built for safer
+            &copy; 2025 Street Guardian. All rights reserved. | Built for safer
             communities.
           </p>
         </div>

@@ -1,20 +1,50 @@
 import mongoose from "mongoose";
 
-const reportSchema = new mongoose.Schema({
-  location: { type: String, required: true },
-  severity: { type: String, enum: ["low", "medium", "high"], required: true },
-  status: {
+const ReportSchema = new mongoose.Schema({
+  name: {
     type: String,
-    enum: ["pending", "in-progress", "resolved", "dismissed"],
-    default: "pending",
+    required: true,
   },
-  photos: [{ type: String }],
-  dogCount: { type: String, required: true },
-  description: { type: String, required: true },
-  contactNumber: { type: String, required: true },
-  timestamp: { type: Date, default: Date.now },
-  reportedBy: { type: String },
+
+  email: {
+    type: String,
+    required: true,
+  },
+
+  location: {
+    type: String,
+    required: true,
+  },
+
+  description: {
+    type: String,
+  },
+
+  severity: {
+    type: String,
+    enum: ["Aggressive", "Struck", "Injured"],
+    required: true,
+  },
+
+  dogCount: {
+    type: Number,
+    required: true,
+  },
+
+  contactNumber: {
+    type: String,
+    required: true,
+  },
+
+  photos: {
+    type: [String],
+    default: [],
+  },
+
+  timestamp: {
+    type: String, // formatted date
+    required: true,
+  },
 });
 
-const Report = mongoose.model("Report", reportSchema);
-export default Report;
+export default mongoose.model("Report", ReportSchema);

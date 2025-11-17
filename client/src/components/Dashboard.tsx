@@ -29,9 +29,9 @@ import { toast } from "sonner";
 interface Report {
   _id: string;
   location: string;
-  severity: "low" | "medium" | "high";
+  severity: "Aggressive" | "Struck" | "Injured";
   status: "pending" | "in-progress" | "resolved" | "dismissed";
-  dogCount: string;
+  dogCount: number;
   description: string;
   contactNumber: string;
   timestamp: string;
@@ -88,11 +88,11 @@ export function Dashboard() {
   // Colors & Icons
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case "high":
+      case "Injured":
         return "bg-red-100 text-red-800 border-red-200";
-      case "medium":
+      case "Aggressive":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "low":
+      case "Struck":
         return "bg-green-100 text-green-800 border-green-200";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
@@ -147,7 +147,7 @@ export function Dashboard() {
     pending: reports.filter((r) => r.status === "pending").length,
     inProgress: reports.filter((r) => r.status === "in-progress").length,
     resolved: reports.filter((r) => r.status === "resolved").length,
-    highSeverity: reports.filter((r) => r.severity === "high").length,
+    highSeverity: reports.filter((r) => r.severity === "Injured").length,
   };
 
   return (
@@ -238,9 +238,9 @@ export function Dashboard() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Severity</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="Aggressive">Aggressive</SelectItem>
+                <SelectItem value="Struck">Struck</SelectItem>
+                <SelectItem value="Injured">Injured</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -264,7 +264,9 @@ export function Dashboard() {
                         <Badge className={getStatusColor(report.status)}>
                           {getStatusIcon(report.status)}
                           <span className="ml-1">
-                            {report.status.replace("-", " ").toUpperCase()}
+                            {(report.status ?? "pending")
+                              .replace("-", " ")
+                              .toUpperCase()}
                           </span>
                         </Badge>
                       </div>
@@ -281,7 +283,7 @@ export function Dashboard() {
                           </p>
                           <p className="flex items-center text-sm text-gray-600">
                             <Calendar className="h-4 w-4 mr-1" />
-                            {new Date(report.timestamp).toLocaleString()}
+                            {report.timestamp}
                           </p>
                         </div>
                         <div>

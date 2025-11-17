@@ -1,8 +1,12 @@
 import { Button } from "./ui/button";
 import { Shield, Users, Phone, Stethoscope, Key } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { logout } from "../utils/auth";
 
 export function Header() {
+  const token = localStorage.getItem("adminToken");
+  const isAdmin = !!token;
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -69,13 +73,11 @@ export function Header() {
                 <span>Animal Doctor</span>
               </Button>
             </div>
-
             {/* Emergency Contact */}
             <div className="flex items-center space-x-2">
               <Phone className="h-4 w-4 text-gray-400" />
               <span className="text-sm text-gray-600">Emergency: 102</span>
             </div>
-
             {/* Admin login */}
             <div
               className="flex items-center cursor-pointer ml-4"
@@ -86,6 +88,18 @@ export function Header() {
                 Admin
               </span>
             </div>
+            {/* // Inside your Header component, after admin login icon logic */}
+            {isAdmin && (
+              <button
+                onClick={() => {
+                  logout(); // clear token
+                  navigate("/admin-register"); // redirect to login
+                }}
+                className="ml-4 text-sm text-red-600 hover:text-red-800"
+              >
+                Logout
+              </button>
+            )}
           </div>
         </div>
       </div>
