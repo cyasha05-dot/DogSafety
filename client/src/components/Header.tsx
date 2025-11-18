@@ -76,7 +76,14 @@ export function Header() {
             {/* Emergency Contact */}
             <div className="flex items-center space-x-2">
               <Phone className="h-4 w-4 text-gray-400" />
-              <span className="text-sm text-gray-600">Emergency: 102</span>
+              <span className="text-sm text-gray-600">
+                <a
+                  href="tel:102"
+                  className="font-semibold text-blue-800 hover:underline"
+                >
+                  Emergency: 102
+                </a>
+              </span>
             </div>
             {/* Admin login */}
             <div

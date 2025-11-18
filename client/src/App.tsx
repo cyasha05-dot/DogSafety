@@ -5,7 +5,7 @@ import { Header } from "./components/Header";
 import { HeroSection } from "./components/HeroSection";
 import { ReportForm } from "./components/ReportForm";
 import { Dashboard } from "./components/Dashboard";
-import { AnimalDoctor } from "./components/AnimalDoctor";
+import AnimalDoctor from "./components/AnimalDoctor";
 import { ReportDetails } from "./components/ReportDetails";
 import { Toaster } from "./components/ui/sonner";
 import { AdminAuth } from "./components/AdminAuth";

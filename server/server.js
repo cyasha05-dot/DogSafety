@@ -5,6 +5,7 @@ import express from "express";
 import connectDB from "./config/DB.config.js";
 import authRoutes from "./routes/auth.routes.js";
 import reportRoutes from "./routes/reports.routes.js";
+import doctorRoutes from "./routes/doctor.routes.js";
 import cors from "cors";
 
 connectDB();
@@ -17,6 +18,7 @@ app.use(express.json());
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/doctors", doctorRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
