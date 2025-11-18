@@ -102,6 +102,7 @@ export const getReports = async (req, res) => {
 export const updateReportStatus = async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
+  // console.log("status", status);
 
   try {
     const report = await Report.findByIdAndUpdate(
@@ -112,7 +113,7 @@ export const updateReportStatus = async (req, res) => {
 
     if (!report) return res.status(404).json({ message: "Report not found" });
 
-    res.json(report);
+    res.status(201).json({ report, message: "Report not found" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

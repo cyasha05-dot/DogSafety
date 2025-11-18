@@ -47,7 +47,7 @@ export default function App() {
           <Route path="/doctor" element={<AnimalDoctor />} />
 
           {/* Report details */}
-          <Route path="/report/:id" element={<ReportDetails />} />
+          <Route path="/reports/:id" element={<ReportDetails />} />
 
           {/* Admin login */}
           <Route path="/admin-register" element={<AdminAuth />} />
@@ -55,7 +55,7 @@ export default function App() {
           {/* Fallback */}
           <Route
             path="*"
-            element={<p className="text-center mt-10">Page not found.</p>}
+            element={<h2 className="text-center mt-10">Page not found.</h2>}
           />
         </Routes>
       </main>

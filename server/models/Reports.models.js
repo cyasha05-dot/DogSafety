@@ -40,6 +40,10 @@ const ReportSchema = new mongoose.Schema({
     type: [String],
     default: [],
   },
+  status: {
+    type: String,
+    default: "pending",
+  },
 
   timestamp: {
     type: String, // formatted date
