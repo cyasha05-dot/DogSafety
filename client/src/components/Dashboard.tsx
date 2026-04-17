@@ -50,7 +50,7 @@ export function Dashboard() {
   const fetchReports = async () => {
     try {
       setLoading(true);
-      const res = await api.get<Report[]>("/api/reports");
+      const res = await api.get<Report[]>("/reports");
       setReports(res.data);
     } catch (err) {
       console.error(err);
