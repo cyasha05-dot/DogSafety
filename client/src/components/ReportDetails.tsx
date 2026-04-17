@@ -78,7 +78,7 @@ export function ReportDetails() {
     try {
       setActionLoading(true);
 
-      await axios.put(`http://localhost:5000/api/reports/${id}/status`, {
+      await api.put(`/reports/${id}/status`, {
         status: newStatus,
       });
 
