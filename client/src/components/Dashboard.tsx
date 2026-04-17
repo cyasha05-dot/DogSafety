@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "./ui/input";
 import axios from "axios";
+import api from "../api/axios";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -49,9 +50,7 @@ export function Dashboard() {
   const fetchReports = async () => {
     try {
       setLoading(true);
-      const res = await axios.get<Report[]>(
-        "http://localhost:5000/api/reports"
-      );
+      const res = await api.get<Report[]>("/api/reports");
       setReports(res.data);
     } catch (err) {
       console.error(err);
@@ -68,15 +67,14 @@ export function Dashboard() {
   // Update status
   const updateReportStatus = async (
     reportId: string,
-    newStatus: Report["status"]
+    newStatus: Report["status"],
   ) => {
     try {
-      const res = await axios.put(
-        `http://localhost:5000/api/reports/${reportId}/status`,
-        { status: newStatus }
-      );
+      const res = await api.put(`/reports/${reportId}/status`, {
+        status: newStatus,
+      });
       setReports((prev) =>
-        prev.map((r) => (r._id === reportId ? res.data : r))
+        prev.map((r) => (r._id === reportId ? res.data : r)),
       );
       toast.success("Report status updated");
     } catch (err) {

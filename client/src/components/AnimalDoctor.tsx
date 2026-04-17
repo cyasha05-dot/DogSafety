@@ -32,6 +32,7 @@ import {
   User,
   Star,
 } from "lucide-react";
+import api from "../api/axios";
 
 /* ---------------------------
    Types
@@ -164,7 +165,7 @@ export default function AnimalDoctor() {
   const [nearbyDoctors, setNearbyDoctors] = useState<NearbyVet[]>([]);
   const [loadingDoctors, setLoadingDoctors] = useState<boolean>(false);
   const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(
-    null
+    null,
   );
   const [selectedDoctorId, setSelectedDoctorId] = useState<string | null>(null);
 
@@ -202,9 +203,7 @@ export default function AnimalDoctor() {
   const fetchDoctors = async (lat: number, lng: number): Promise<void> => {
     setLoadingDoctors(true);
     try {
-      const res = await axios.get(
-        `http://localhost:5000/api/doctors/nearby?lat=${lat}&lng=${lng}`
-      );
+      const res = await api.get(`/doctors/nearby?lat=${lat}&lng=${lng}`);
       const data =
         Array.isArray(res.data) && res.data.length > 0 ? res.data : null;
 
@@ -270,11 +269,11 @@ export default function AnimalDoctor() {
       (err: GeolocationPositionError) => {
         console.warn("Geolocation denied/fail:", err);
         toast.warning(
-          "Location denied or unavailable — showing fallback clinics (Pune area)."
+          "Location denied or unavailable — showing fallback clinics (Pune area).",
         );
         setNearbyDoctors(fallbackDoctors);
       },
-      { enableHighAccuracy: true, timeout: 8000 }
+      { enableHighAccuracy: true, timeout: 8000 },
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -287,9 +286,7 @@ export default function AnimalDoctor() {
     setDetailsOpen(true);
     setActiveDetails(null);
     try {
-      const res = await axios.get(
-        `http://localhost:5000/api/doctors/details/${placeId}`
-      );
+      const res = await api.get(`/doctors/details/${placeId}`);
       setActiveDetails(res.data || null);
     } catch (err: unknown) {
       console.error("Failed to fetch place details:", err);
@@ -304,7 +301,7 @@ export default function AnimalDoctor() {
      Booking form submit
   ---------------------------- */
   const handleSubmit = async (
-    e: React.FormEvent<HTMLFormElement>
+    e: React.FormEvent<HTMLFormElement>,
   ): Promise<void> => {
     e.preventDefault();
     if (!selectedDoctorId) return void toast.error("Select a doctor first.");
@@ -398,8 +395,8 @@ export default function AnimalDoctor() {
             {nearbyDoctors.length > 0
               ? `${nearbyDoctors.length} results`
               : loadingDoctors
-              ? "Searching..."
-              : "No results"}
+                ? "Searching..."
+                : "No results"}
           </div>
         </div>
 
@@ -713,7 +710,7 @@ export default function AnimalDoctor() {
                         {activeDetails.opening_hours.weekday_text!.map(
                           (txt, i) => (
                             <li key={i}>{txt}</li>
-                          )
+                          ),
                         )}
                       </ul>
                     </div>
