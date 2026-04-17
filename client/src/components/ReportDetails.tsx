@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { toast } from "sonner";
-
+import api from "../api/axios";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -58,7 +57,7 @@ export function ReportDetails() {
   useEffect(() => {
     const fetchReport = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/reports/${id}`);
+        const res = await api.get(`/reports/${id}`);
         // console.log(res.data);
         setReport(res.data);
       } catch (error) {
@@ -74,7 +73,7 @@ export function ReportDetails() {
   // ADMIN ACTION HANDLER
   // ========================
   const handleStatusUpdate = async (
-    newStatus: "pending" | "in-progress" | "resolved" | "dismissed"
+    newStatus: "pending" | "in-progress" | "resolved" | "dismissed",
   ) => {
     try {
       setActionLoading(true);
@@ -173,7 +172,7 @@ export function ReportDetails() {
 
               <Badge
                 className={`${getSeverityColor(
-                  report.severity
+                  report.severity,
                 )} text-base px-3 py-1`}
               >
                 {report.severity?.toUpperCase() || "UNKNOWN"}
@@ -181,7 +180,7 @@ export function ReportDetails() {
 
               <Badge
                 className={`${getStatusColor(
-                  report.status
+                  report.status,
                 )} text-base px-3 py-1 flex items-center`}
               >
                 {getStatusIcon(report.status)}
